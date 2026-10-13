@@ -1,0 +1,8 @@
+streamlit>=1.57.0
+pandas>=2.0.0
+groq>=1.7.0
+plotly>=7.1.0
+prophet>=1.5.0
+python-dotenv>=1.0.0
+reportlab>=4.0.0
+scikit-learn>=1.5.0
