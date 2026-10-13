@@ -1,1 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual Environments
+venv/
+.venv/
+
+# VS Code
+.vscode/
+
+# Environment Variables
 .env
+
+# Generated Reports
+*.pdf
