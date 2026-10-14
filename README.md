@@ -378,7 +378,6 @@ python -m streamlit run app.py
 
 # 📸 Screenshots
 
-> Add screenshots of the following pages here:
 
 - Home Dashboard
 - <img width="1890" height="851" alt="image" src="https://github.com/user-attachments/assets/b68ca55a-8036-4915-95c6-9ad48261eeb1" />
@@ -393,6 +392,8 @@ python -m streamlit run app.py
 - <img width="1911" height="852" alt="image" src="https://github.com/user-attachments/assets/21e321b8-8678-444a-a4a8-5ee095fcd4b0" />
 
 - Business Health Score
+- <img width="1903" height="865" alt="image" src="https://github.com/user-attachments/assets/8ea30056-8c07-4bc4-87de-ea5f5815e1c6" />
+
 - Anomaly Detection
 - <img width="1906" height="861" alt="image" src="https://github.com/user-attachments/assets/2ba0d0cd-305f-4f48-8853-1dd5b33790c7" />
 
