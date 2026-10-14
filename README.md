@@ -395,6 +395,8 @@ python -m streamlit run app.py
 - <img width="1906" height="861" alt="image" src="https://github.com/user-attachments/assets/2ba0d0cd-305f-4f48-8853-1dd5b33790c7" />
 
 - Customer Segmentation
+- <img width="1897" height="870" alt="image" src="https://github.com/user-attachments/assets/da8d8305-e540-4ead-becb-b714c9f5406d" />
+
 - Churn Prediction
 - CEO Dashboard
 
