@@ -390,6 +390,8 @@ python -m streamlit run app.py
 - <img width="1893" height="855" alt="image" src="https://github.com/user-attachments/assets/9404832f-8dff-490c-80bd-254ae31122fd" />
 
 - AI Powered Data Questioning
+- <img width="1911" height="852" alt="image" src="https://github.com/user-attachments/assets/21e321b8-8678-444a-a4a8-5ee095fcd4b0" />
+
 - Business Health Score
 - Anomaly Detection
 - <img width="1906" height="861" alt="image" src="https://github.com/user-attachments/assets/2ba0d0cd-305f-4f48-8853-1dd5b33790c7" />
