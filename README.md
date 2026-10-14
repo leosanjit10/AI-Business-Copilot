@@ -381,6 +381,8 @@ python -m streamlit run app.py
 > Add screenshots of the following pages here:
 
 - Home Dashboard
+- <img width="1890" height="851" alt="image" src="https://github.com/user-attachments/assets/b68ca55a-8036-4915-95c6-9ad48261eeb1" />
+
 - Forecasting
 - <img width="1892" height="860" alt="image" src="https://github.com/user-attachments/assets/5e8d8561-2451-4824-bcc0-0058c56f5ccd" />
 
