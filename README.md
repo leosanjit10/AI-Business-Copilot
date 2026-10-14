@@ -383,6 +383,8 @@ python -m streamlit run app.py
 - Home Dashboard
 - Forecasting
 - AI Consultant
+- <img width="1893" height="855" alt="image" src="https://github.com/user-attachments/assets/9404832f-8dff-490c-80bd-254ae31122fd" />
+
 - Executive Reports
 - Business Health Score
 - Anomaly Detection
