@@ -392,6 +392,8 @@ python -m streamlit run app.py
 - Executive Reports
 - Business Health Score
 - Anomaly Detection
+- <img width="1906" height="861" alt="image" src="https://github.com/user-attachments/assets/2ba0d0cd-305f-4f48-8853-1dd5b33790c7" />
+
 - Customer Segmentation
 - Churn Prediction
 - CEO Dashboard
