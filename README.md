@@ -398,6 +398,8 @@ python -m streamlit run app.py
 - <img width="1897" height="870" alt="image" src="https://github.com/user-attachments/assets/da8d8305-e540-4ead-becb-b714c9f5406d" />
 
 - Churn Prediction
+- ![Uploading image.png…]()
+
 - CEO Dashboard
 
 ---
