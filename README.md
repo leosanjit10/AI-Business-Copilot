@@ -382,6 +382,8 @@ python -m streamlit run app.py
 
 - Home Dashboard
 - Forecasting
+- <img width="1892" height="860" alt="image" src="https://github.com/user-attachments/assets/5e8d8561-2451-4824-bcc0-0058c56f5ccd" />
+
 - AI Consultant
 - <img width="1893" height="855" alt="image" src="https://github.com/user-attachments/assets/9404832f-8dff-490c-80bd-254ae31122fd" />
 
