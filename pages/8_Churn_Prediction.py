@@ -4,13 +4,12 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-from groq import APIError
 
 from utils.churn_prediction import FEATURE_COLUMNS, RISK_LEVELS, analyze_churn
 from utils.shared import (
+    GroqCompletionError,
     apply_compact_page_spacing,
-    get_groq_client,
-    get_groq_model,
+    generate_groq_text,
     require_dashboard_data,
 )
 
@@ -373,10 +372,8 @@ Feature importance: {churn['feature_importance'].to_dict(orient='records')}
 """
         try:
             with st.spinner("Preparing churn risk recommendations..."):
-                response = get_groq_client().chat.completions.create(
-                    model=get_groq_model(),
-                    temperature=0.2,
-                    messages=[
+                answer = generate_groq_text(
+                    [
                         {
                             "role": "system",
                             "content": (
@@ -387,14 +384,11 @@ Feature importance: {churn['feature_importance'].to_dict(orient='records')}
                         },
                         {"role": "user", "content": prompt},
                     ],
+                    temperature=0.2,
                 )
-            answer = response.choices[0].message.content
-            if not answer or not answer.strip():
-                st.error("Groq returned an empty churn analysis. Please try again.")
-            else:
-                st.session_state["churn_analysis"] = answer.strip()
-                st.rerun()
-        except APIError as error:
+            st.session_state["churn_analysis"] = answer
+            st.rerun()
+        except GroqCompletionError as error:
             st.error(f"Groq could not generate the churn analysis: {error}")
 
 churn_analysis = st.session_state.get("churn_analysis")

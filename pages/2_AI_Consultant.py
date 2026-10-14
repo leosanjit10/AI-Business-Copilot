@@ -3,9 +3,9 @@
 import streamlit as st
 
 from utils.shared import (
+    GroqCompletionError,
     apply_compact_page_spacing,
-    get_groq_client,
-    get_groq_model,
+    generate_groq_text,
     require_dashboard_data,
     render_forecast_prompt_card,
 )
@@ -67,8 +67,7 @@ consultation_actions = {
 
 def request_analysis(instructions: str) -> str:
     """Send a business-context prompt to the configured Groq chat model."""
-    response = get_groq_client().chat.completions.create(
-        model=get_groq_model(),
+    return generate_groq_text(
         messages=[
             {
                 "role": "system",
@@ -84,11 +83,6 @@ def request_analysis(instructions: str) -> str:
             },
         ],
     )
-    answer = response.choices[0].message.content
-    if not answer:
-        st.error("Groq returned an empty response. Please try again.")
-        st.stop()
-    return answer
 
 
 st.markdown(
@@ -381,25 +375,29 @@ for index, (label, instructions) in enumerate(consultation_actions.items()):
                 type="primary",
                 width="stretch",
             ):
-                with st.spinner(f"{label}..."):
-                    recommendation = request_analysis(instructions)
-                with st.container(border=True):
-                    st.markdown(f"#### {label} · Consultant Recommendation")
-                    st.markdown(
-                        '<div class="consult-label">Why It Matters</div>',
-                        unsafe_allow_html=True,
-                    )
-                    st.markdown(why_it_matters)
-                    st.markdown(
-                        '<div class="consult-label">Recommended Action</div>',
-                        unsafe_allow_html=True,
-                    )
-                    st.markdown(recommendation)
-                    st.markdown(
-                        '<div class="consult-label">Expected Outcome</div>',
-                        unsafe_allow_html=True,
-                    )
-                    st.markdown(outcome)
+                try:
+                    with st.spinner(f"{label}..."):
+                        recommendation = request_analysis(instructions)
+                except GroqCompletionError as error:
+                    st.error(f"Groq could not generate {label.lower()}: {error}")
+                else:
+                    with st.container(border=True):
+                        st.markdown(f"#### {label} · Consultant Recommendation")
+                        st.markdown(
+                            '<div class="consult-label">Why It Matters</div>',
+                            unsafe_allow_html=True,
+                        )
+                        st.markdown(why_it_matters)
+                        st.markdown(
+                            '<div class="consult-label">Recommended Action</div>',
+                            unsafe_allow_html=True,
+                        )
+                        st.markdown(recommendation)
+                        st.markdown(
+                            '<div class="consult-label">Expected Outcome</div>',
+                            unsafe_allow_html=True,
+                        )
+                        st.markdown(outcome)
 
 st.markdown(
     '<div class="consult-section"><h2>Ask Your Data</h2>'
@@ -419,8 +417,13 @@ with st.container(border=True):
         if not question.strip():
             st.warning("Enter a question before submitting.")
         else:
-            with st.spinner("Analyzing your question..."):
-                st.markdown(request_analysis(question.strip()))
+            try:
+                with st.spinner("Analyzing your question..."):
+                    answer = request_analysis(question.strip())
+            except GroqCompletionError as error:
+                st.error(f"Groq could not answer the question: {error}")
+            else:
+                st.markdown(answer)
 
 with st.expander("Business data used by the consultant"):
     st.markdown(business_context)

@@ -1,15 +1,19 @@
 """Shared environment, session-state, and Groq helpers for Streamlit pages."""
 
+import logging
 import os
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
-from groq import Groq
+from groq import APIError, Groq
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(dotenv_path=PROJECT_ROOT / ".env", override=False)
+
+logger = logging.getLogger(__name__)
 
 SESSION_DATA_KEYS = (
     "df",
@@ -20,6 +24,10 @@ SESSION_DATA_KEYS = (
     "best_product",
     "average_order_value",
 )
+
+
+class GroqCompletionError(RuntimeError):
+    """Raised when a Groq request cannot produce validated assistant text."""
 
 
 def apply_compact_page_spacing() -> None:
@@ -142,3 +150,83 @@ def get_groq_model() -> str:
     """Return the configured Groq model, with the current app default."""
     default_model = "openai/gpt-oss-20b"
     return os.getenv("GROQ_MODEL", default_model).strip() or default_model
+
+
+def generate_groq_text(
+    messages: list[dict[str, str]],
+    *,
+    temperature: float | None = None,
+) -> str:
+    """Request a chat completion and return validated assistant text."""
+    if not messages or any(
+        not isinstance(message.get("content"), str)
+        or not message["content"].strip()
+        for message in messages
+    ):
+        raise GroqCompletionError(
+            "The Groq request was not sent because its prompt is empty."
+        )
+
+    model = get_groq_model()
+    prompt_chars = sum(len(message["content"]) for message in messages)
+    request_options: dict[str, Any] = {
+        "model": model,
+        "messages": messages,
+    }
+    if temperature is not None:
+        request_options["temperature"] = temperature
+
+    try:
+        response = get_groq_client().chat.completions.create(**request_options)
+    except APIError as error:
+        logger.exception(
+            "Groq API request failed (model=%s, status=%s, request_id=%s, "
+            "prompt_chars=%s)",
+            model,
+            getattr(error, "status_code", None),
+            getattr(error, "request_id", None),
+            prompt_chars,
+        )
+        raise GroqCompletionError(f"Groq API request failed: {error}") from error
+
+    request_id = getattr(response, "_request_id", None)
+    response_id = getattr(response, "id", None)
+    choices = getattr(response, "choices", None)
+    choice = choices[0] if choices else None
+    message = getattr(choice, "message", None)
+    content = getattr(message, "content", None)
+    finish_reason = getattr(choice, "finish_reason", None)
+    usage = getattr(response, "usage", None)
+    completion_tokens = getattr(usage, "completion_tokens", None)
+
+    if isinstance(content, str) and content.strip():
+        logger.info(
+            "Groq completion returned text (model=%s, request_id=%s, "
+            "response_id=%s, finish_reason=%s, prompt_chars=%s, "
+            "completion_tokens=%s)",
+            model,
+            request_id,
+            response_id,
+            finish_reason,
+            prompt_chars,
+            completion_tokens,
+        )
+        return content.strip()
+
+    diagnostics = (
+        f"model={model}, finish_reason={finish_reason or 'unknown'}, "
+        f"completion_tokens={completion_tokens if completion_tokens is not None else 'unknown'}, "
+        f"request_id={request_id or response_id or 'unavailable'}, "
+        f"reasoning_present={bool(getattr(message, 'reasoning', None))}, "
+        f"tool_calls_present={bool(getattr(message, 'tool_calls', None))}"
+    )
+    logger.error(
+        "Groq returned no assistant text (%s, prompt_chars=%s, content_type=%s)",
+        diagnostics,
+        prompt_chars,
+        type(content).__name__ if content is not None else "None",
+    )
+    raise GroqCompletionError(
+        "Groq returned no assistant text. "
+        f"Completion diagnostics: {diagnostics}."
+    )

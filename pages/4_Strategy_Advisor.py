@@ -5,12 +5,11 @@ from typing import Any
 
 import pandas as pd
 import streamlit as st
-from groq import APIError
 
 from utils.shared import (
+    GroqCompletionError,
     apply_compact_page_spacing,
-    get_groq_client,
-    get_groq_model,
+    generate_groq_text,
     require_dashboard_data,
     render_forecast_prompt_card,
 )
@@ -165,10 +164,8 @@ def generate_strategy_recommendations(context: str) -> dict[str, str]:
         "(3) an owner or time horizon, and (4) a measurable success metric."
         for title, instruction in STRATEGY_AREAS
     )
-    response = get_groq_client().chat.completions.create(
-        model=get_groq_model(),
-        temperature=0.3,
-        messages=[
+    content = generate_groq_text(
+        [
             {
                 "role": "system",
                 "content": (
@@ -191,10 +188,8 @@ def generate_strategy_recommendations(context: str) -> dict[str, str]:
                 ),
             },
         ],
+        temperature=0.3,
     )
-    content = response.choices[0].message.content
-    if not content or not content.strip():
-        return {}
 
     recommendations: dict[str, str] = {}
     for title, _ in STRATEGY_AREAS:
@@ -493,7 +488,7 @@ if st.button(
     try:
         with st.spinner("Developing your strategic advisory plan..."):
             strategy = generate_strategy_recommendations(context)
-    except APIError as error:
+    except GroqCompletionError as error:
         st.error(f"Groq could not generate recommendations: {error}")
     else:
         missing_areas = [title for title, _ in STRATEGY_AREAS if title not in strategy]

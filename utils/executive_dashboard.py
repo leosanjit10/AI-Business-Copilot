@@ -24,8 +24,7 @@ from reportlab.platypus import (
 )
 
 from utils.shared import (
-    get_groq_client,
-    get_groq_model,
+    generate_groq_text,
     render_forecast_prompt_card,
 )
 
@@ -408,10 +407,8 @@ def _generate_consultant_report(
     quality: dict[str, Any],
     growth: float | None,
 ) -> str:
-    response = get_groq_client().chat.completions.create(
-        model=get_groq_model(),
-        temperature=0.25,
-        messages=[
+    content = generate_groq_text(
+        [
             {
                 "role": "system",
                 "content": (
@@ -427,11 +424,9 @@ def _generate_consultant_report(
                 ),
             },
         ],
+        temperature=0.25,
     )
-    content = response.choices[0].message.content
-    if not content or not content.strip():
-        raise ValueError("The AI provider returned an empty consultant report.")
-    report = content.strip()
+    report = content
     missing_sections = [
         heading for heading in CONSULTANT_SECTIONS if heading not in report
     ]

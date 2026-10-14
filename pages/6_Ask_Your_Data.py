@@ -3,12 +3,11 @@
 import pandas as pd
 import re
 import streamlit as st
-from groq import APIError
 
 from utils.shared import (
+    GroqCompletionError,
     apply_compact_page_spacing,
-    get_groq_client,
-    get_groq_model,
+    generate_groq_text,
     require_dashboard_data,
 )
 
@@ -152,15 +151,7 @@ def _ask(question: str) -> str:
         if item.get("role") in {"user", "assistant"}
     )
     messages.append({"role": "user", "content": question})
-    response = get_groq_client().chat.completions.create(
-        model=get_groq_model(),
-        temperature=0.25,
-        messages=messages,
-    )
-    answer = response.choices[0].message.content
-    if not answer or not answer.strip():
-        raise ValueError("Groq returned an empty answer.")
-    return answer.strip()
+    return generate_groq_text(messages, temperature=0.25)
 
 
 def _section_content(answer: str) -> dict[str, str]:
@@ -303,12 +294,13 @@ if question:
                 with st.spinner("Analyzing your sales data..."):
                     answer = _ask(user_question)
                 _render_assistant_answer(answer)
-            except APIError as error:
+            except GroqCompletionError as error:
                 answer = (
                     "I couldn't reach the AI service for this question. "
                     "Please check your Groq configuration and try again."
                 )
-                st.error(f"{answer} Details: {error}")
+                answer = f"{answer} Details: {error}"
+                st.error(answer)
             except ValueError as error:
                 answer = str(error)
                 st.error(answer)

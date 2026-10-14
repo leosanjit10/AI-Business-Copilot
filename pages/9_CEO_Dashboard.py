@@ -4,7 +4,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-from groq import APIError
 
 from utils.anomaly_detection import SEVERITY_LEVELS, detect_sales_anomalies
 from utils.business_health import calculate_business_health_score
@@ -17,9 +16,9 @@ from utils.ceo_dashboard import (
 from utils.churn_prediction import analyze_churn
 from utils.customer_segmentation import build_customer_segments
 from utils.shared import (
+    GroqCompletionError,
     apply_compact_page_spacing,
-    get_groq_client,
-    get_groq_model,
+    generate_groq_text,
     require_dashboard_data,
 )
 
@@ -122,10 +121,8 @@ market facts. Keep recommendations specific, proportionate, and measurable.
 """
     try:
         with st.spinner("Preparing the CEO briefing..."):
-            response = get_groq_client().chat.completions.create(
-                model=get_groq_model(),
-                temperature=0.2,
-                messages=[
+            briefing = generate_groq_text(
+                [
                     {
                         "role": "system",
                         "content": (
@@ -136,14 +133,11 @@ market facts. Keep recommendations specific, proportionate, and measurable.
                     },
                     {"role": "user", "content": prompt},
                 ],
+                temperature=0.2,
             )
-        briefing = response.choices[0].message.content
-        if not briefing or not briefing.strip():
-            st.error("Groq returned an empty CEO briefing. Please try again.")
-        else:
-            st.session_state["ceo_briefing"] = briefing.strip()
-            st.rerun()
-    except APIError as error:
+        st.session_state["ceo_briefing"] = briefing
+        st.rerun()
+    except GroqCompletionError as error:
         st.error(f"Groq could not generate the CEO briefing: {error}")
 
 briefing = st.session_state.get("ceo_briefing")

@@ -3,13 +3,12 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from groq import APIError
 
 from utils.customer_segmentation import build_customer_segments
 from utils.shared import (
+    GroqCompletionError,
     apply_compact_page_spacing,
-    get_groq_client,
-    get_groq_model,
+    generate_groq_text,
     require_dashboard_data,
 )
 
@@ -372,10 +371,8 @@ Segment profile table:
 """
     try:
         with st.spinner("Preparing segment insights..."):
-            response = get_groq_client().chat.completions.create(
-                model=get_groq_model(),
-                temperature=0.25,
-                messages=[
+            answer = generate_groq_text(
+                [
                     {
                         "role": "system",
                         "content": (
@@ -386,13 +383,10 @@ Segment profile table:
                     },
                     {"role": "user", "content": prompt},
                 ],
+                temperature=0.25,
             )
-        answer = response.choices[0].message.content
-        if not answer or not answer.strip():
-            st.error("Groq returned an empty segment analysis. Please try again.")
-        else:
-            st.session_state["segment_ai_insights"] = answer.strip()
-    except APIError as error:
+        st.session_state["segment_ai_insights"] = answer
+    except GroqCompletionError as error:
         st.error(f"Groq could not generate segment insights: {error}")
 
 segment_insights = st.session_state.get("segment_ai_insights")

@@ -3,13 +3,12 @@
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-from groq import APIError
 
 from utils.anomaly_detection import SEVERITY_LEVELS, detect_sales_anomalies
 from utils.shared import (
+    GroqCompletionError,
     apply_compact_page_spacing,
-    get_groq_client,
-    get_groq_model,
+    generate_groq_text,
     require_dashboard_data,
 )
 
@@ -389,10 +388,8 @@ Evidence (at most 40 rows): {evidence}
 """
        try:
            with st.spinner("Preparing the anomaly analysis..."):
-               response = get_groq_client().chat.completions.create(
-                   model=get_groq_model(),
-                   temperature=0.2,
-                   messages=[
+               answer = generate_groq_text(
+                   [
                        {
                            "role": "system",
                            "content": (
@@ -403,14 +400,11 @@ Evidence (at most 40 rows): {evidence}
                        },
                        {"role": "user", "content": prompt},
                    ],
+                   temperature=0.2,
                )
-           answer = response.choices[0].message.content
-           if not answer or not answer.strip():
-               st.error("Groq returned an empty explanation. Please try again.")
-           else:
-               st.session_state["anomaly_analysis"] = answer.strip()
-               st.rerun()
-       except APIError as error:
+           st.session_state["anomaly_analysis"] = answer
+           st.rerun()
+       except GroqCompletionError as error:
            st.error(f"Groq could not generate the anomaly explanation: {error}")
 
    analysis = st.session_state.get("anomaly_analysis")

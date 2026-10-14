@@ -9,7 +9,6 @@ from typing import Any
 
 import pandas as pd
 import streamlit as st
-from groq import APIError
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import letter
@@ -24,9 +23,9 @@ from reportlab.platypus import (
 )
 
 from utils.shared import (
+    GroqCompletionError,
     apply_compact_page_spacing,
-    get_groq_client,
-    get_groq_model,
+    generate_groq_text,
     require_dashboard_data,
     render_forecast_prompt_card,
 )
@@ -212,10 +211,8 @@ Daily revenue history:
 
 def generate_ai_report() -> str:
     """Generate and complete the required consulting report sections."""
-    response = get_groq_client().chat.completions.create(
-        model=get_groq_model(),
-        temperature=0.2,
-        messages=[
+    report = generate_groq_text(
+        [
             {
                 "role": "system",
                 "content": (
@@ -227,11 +224,9 @@ def generate_ai_report() -> str:
             },
             {"role": "user", "content": _build_report_prompt()},
         ],
+        temperature=0.2,
     )
-    report = response.choices[0].message.content
-    if not report or not report.strip():
-        return ""
-    return _complete_report_sections(report.strip())
+    return _complete_report_sections(report)
 
 
 INSIGHT_FIELD_ORDER = (
@@ -1707,15 +1702,12 @@ if st.button("Generate AI Report", type="primary", key="generate_ai_report"):
     try:
         with st.spinner("Preparing your executive report..."):
             generated_report = generate_ai_report()
-    except APIError as error:
+    except GroqCompletionError as error:
         st.error(f"Groq could not generate the report: {error}")
     else:
-        if not generated_report:
-            st.error("Groq returned an empty report. Please try again.")
-        else:
-            st.session_state["ai_report"] = generated_report
-            st.success("Executive report generated.")
-            st.rerun()
+        st.session_state["ai_report"] = generated_report
+        st.success("Executive report generated.")
+        st.rerun()
 
 if has_report:
     st.markdown(
