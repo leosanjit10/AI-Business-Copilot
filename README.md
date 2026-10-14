@@ -389,7 +389,7 @@ python -m streamlit run app.py
 - AI Consultant
 - <img width="1893" height="855" alt="image" src="https://github.com/user-attachments/assets/9404832f-8dff-490c-80bd-254ae31122fd" />
 
-- Executive Reports
+- AI Powered Data Questioning
 - Business Health Score
 - Anomaly Detection
 - <img width="1906" height="861" alt="image" src="https://github.com/user-attachments/assets/2ba0d0cd-305f-4f48-8853-1dd5b33790c7" />
@@ -398,9 +398,12 @@ python -m streamlit run app.py
 - <img width="1897" height="870" alt="image" src="https://github.com/user-attachments/assets/da8d8305-e540-4ead-becb-b714c9f5406d" />
 
 - Churn Prediction
-- ![Uploading image.png…]()
+- <img width="1907" height="872" alt="image" src="https://github.com/user-attachments/assets/69f8e28e-28d2-46b3-b180-1670f40e6cc4" />
 
 - CEO Dashboard
+-<img width="1907" height="872" alt="image" src="https://github.com/user-attachments/assets/719e676c-6fe6-408f-8209-f69b1d8903ec" />
+
+
 
 ---
 
